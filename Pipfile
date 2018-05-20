@@ -5,8 +5,10 @@ name = "pypi"
 
 [packages]
 django = "*"
+django-ckeditor = "*"
 
 [dev-packages]
+ipdb = "*"
 
 [requires]
 python_version = "3.6"

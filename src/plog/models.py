@@ -1,24 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-# todo list
 from django.template.defaultfilters import slugify
-
-"""
-- captcha on comments
-- use glow thingy on gitkraken
-"""
 
 
 class Post(models.Model):
-    """
-    # todo: comments, tags
-    """
-
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     title = models.CharField(max_length=255)
     body = models.CharField(max_length=255)
-    slug = models.SlugField()
+    slug = models.SlugField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -26,3 +15,6 @@ class Post(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
