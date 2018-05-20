@@ -1,5 +1,8 @@
 import os
 
+# noinspection PyUnresolvedReferences
+from .site_settings import *
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -9,7 +12,7 @@ SECRET_KEY = 'vb6@)+2-+%%kdk-^y*ay&o@%-b59b3!o&zj#!7+(gpg#h2cvx_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -109,3 +112,62 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.messages.context_processors.messages",
     'django.core.context_processors.request',
 )
+
+# logging
+LOG_LEVEL = 'INFO'
+LOG_HANDLER = 'file'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'formatters': {
+        'simple': {
+            'format': '[%(asctime)s] %(levelname)s %(message)s'
+        },
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s %(name)s %(lineno)d "%(message)s" %(process)d %(thread)d'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '/logs/django.log',
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': [LOG_HANDLER],
+            'level': LOG_LEVEL,
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': [LOG_HANDLER],
+            'level': LOG_LEVEL,
+            'propagate': True,
+        },
+        'apps': {
+            'handlers': [LOG_HANDLER],
+            'level': LOG_LEVEL,
+            'propagate': True,
+        },
+        'plog': {
+            'handlers': [LOG_HANDLER],
+            'level': LOG_LEVEL,
+            'propagate': True,
+        }
+    }
+}

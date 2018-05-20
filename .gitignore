@@ -6,3 +6,5 @@ src/db\.sqlite3
 src/static/ckeditor/
 
 src/static/admin/
+
+\.env
