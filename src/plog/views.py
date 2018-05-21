@@ -1,13 +1,17 @@
 from django import views
 from django.http import HttpResponse
 from django.shortcuts import render
+from . import models
 
 
 class IndexView(views.View):
     template = 'index.html'
 
     def get(self, request):
-        context = {}
+        posts = models.Post.objects.all()
+        context = {
+            'posts': posts
+        }
         return render(request, 'index.html', context)
 
 

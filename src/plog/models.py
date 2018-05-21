@@ -18,3 +18,6 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def formatted_created_at(self):
+        return self.created_at.strftime('%m-%d-%Y')
