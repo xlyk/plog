@@ -8,3 +8,5 @@ src/static/ckeditor/
 src/static/admin/
 
 \.env
+
+src/Pipfile
