@@ -8,6 +8,7 @@ class IndexView(views.View):
     template = 'index.html'
 
     def get(self, request):
+        # todo: pagination
         posts = models.Post.objects.all()
         context = {
             'posts': posts
