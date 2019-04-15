@@ -2,8 +2,6 @@
 
 TAG=plog:latest
 
-# TODO: nginx, ssl
-
 # run black code formatter (https://github.com/ambv/black)
 black:
 	black .
