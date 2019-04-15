@@ -25,5 +25,5 @@ serve:
 	docker run --rm -d \
 		--name plog \
 		-p 8000:8000 \
-		${TAG} gunicorn -w 4 main:app
+		${TAG} gunicorn -w 4 -b 0.0.0.0:8000 main:app
 
