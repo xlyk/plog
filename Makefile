@@ -1,27 +1,44 @@
 .PHONY: black build shell debug serve
 
+NAME=plog
 TAG=plog:latest
+PORT=8000
+WORKERS=4
 
-# run black code formatter (https://github.com/ambv/black)
 black:
+	@ # run black code formatter (https://github.com/ambv/black)
 	black .
 
-# build docker container
 build:
+	@ # build docker container
 	docker build -t ${TAG} .
 
-# start an interactive shell
 shell:
-	docker run --rm -it ${TAG} /bin/sh
+	@ # start an interactive shell
+	${MAKE} build
+	docker run --rm -it --name ${NAME}_shell \
+		-v $(shell pwd):/app --env-file=.env ${TAG} /bin/sh
 
-# start debug server
 debug:
-	docker run --rm -it -p 8000:8000 ${TAG}
+	@ # start debug server
+	${MAKE} build
+	docker run --rm -it \
+		--name ${NAME} \
+		-p ${PORT}:${PORT} \
+		-v $(shell pwd):/app \
+		--env-file=.env \
+		${TAG}
 
-# serve flask app with gunicorn
 serve:
+	@ # serve flask app with gunicorn
+	${MAKE} build
 	docker run --rm -d \
-		--name plog \
-		-p 8000:8000 \
-		${TAG} gunicorn -w 4 -b 0.0.0.0:8000 main:app
+		--name ${NAME} \
+		-p ${PORT}:${PORT} \
+		--env-file=.env \
+		${TAG} \
+		gunicorn -w ${WORKERS} -b 0.0.0.0:${PORT} main:app
 
+stop:
+	@ # stop plog container
+	docker rm -fv plog
