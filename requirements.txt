@@ -3,4 +3,4 @@ gunicorn==19.9.0
 Flask-Markdown==0.3
 pymongo==3.8.0
 dnspython==1.16.0
-Flask-PyMongo==2.2.0
+Flask-PyMongo==2.2.1
