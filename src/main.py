@@ -6,48 +6,44 @@ from flask import Flask, render_template
 from flask_pymongo import PyMongo
 
 
+# environment variables
 LISTEN_HOST = os.getenv("LISTEN_HOST", "0.0.0.0")
 LISTEN_PORT = int(os.getenv("LISTEN_PORT", 8000))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info")
 DEBUG_MODE = bool(os.getenv("DEBUG_MODE"))
-
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
+DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
 
 # initialize logging
 logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s")
 log_level = getattr(logging, LOG_LEVEL.upper())
 
 # initialize flask app
-app = Flask("plog")
+app = Flask("plog", template_folder="/app/src/templates")
 app.config.update(DEBUG=DEBUG_MODE)
 app.logger.setLevel(log_level)
 logging.getLogger("werkzeug").setLevel(log_level)
 
-app.config["MONGO_URI"] = f"mongodb+srv://{DB_USER}:{DB_PASS}@cluster0-a5qj8.mongodb.net/test?retryWrites=true"
+# initialize database
+app.config["MONGO_URI"] = DB_CONNECTION_STRING
 mongo = PyMongo(app)
 
-"""
-import pymongo
-client = pymongo.MongoClient("")
-db = client.test
-collection = db['test-collection']
-item = {"foo": "bar"}
-ret = collection.insert_one(item)
-ret
-ret.__dict__
-import inspect
-inspect.getmembers(ret)
-ret['inserted_id']
-ret.inserted_id
-"""
+
+class Post:
+    def get_all(self):
+        for p in mongo.db.posts.find().limit(5):
+            p["created"] = p["_id"].generation_time.strftime("%c")
+            yield p
+
+    def create(self):
+        # todo: check for duplicate title
+        post = {"title": "", "content": "", "image": "", "slug": "", "tags": []}
+        mongo.db.posts.insert_one(post)
 
 
 @app.route("/")
 def index():
-    # TODO: lookup page
-    app.logger.info(f"poop poop...")
-    return render_template("index.html")
+    posts = list(Post().get_all())
+    return render_template("index.html", posts=posts)
 
 
 def shutdown(signal_number, stack_frame):

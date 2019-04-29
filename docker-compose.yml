@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  plog:
+    container_name: "plog"
+    image: "xlyk/plog:latest"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ".:/app"
+    env_file:
+      - "./.env"
+
