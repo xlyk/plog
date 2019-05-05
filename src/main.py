@@ -1,9 +1,12 @@
+import datetime
 import logging
 import os
 import signal
 import sys
-from flask import Flask, render_template
+from flask import Flask, request, render_template
 from flask_pymongo import PyMongo
+
+import data
 
 
 # environment variables
@@ -27,23 +30,32 @@ logging.getLogger("werkzeug").setLevel(log_level)
 app.config["MONGO_URI"] = DB_CONNECTION_STRING
 mongo = PyMongo(app)
 
-
-class Post:
-    def get_all(self):
-        for p in mongo.db.posts.find().limit(5):
-            p["created"] = p["_id"].generation_time.strftime("%c")
-            yield p
-
-    def create(self):
-        # todo: check for duplicate title
-        post = {"title": "", "content": "", "image": "", "slug": "", "tags": []}
-        mongo.db.posts.insert_one(post)
+# pass mongo instance to data module
+data.mongo = mongo
 
 
 @app.route("/")
 def index():
-    posts = list(Post().get_all())
+    posts = data.Post.get_recent(limit=5)
     return render_template("index.html", posts=posts)
+
+
+@app.route("/admin/login/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        try:
+            user = data.User(**request.form)
+        except KeyError:
+            return "invalid post data", 400
+
+        try:
+            user.login()
+        except ValueError:
+            return "login failed", 401
+
+        return f"wow nice job, {user['username']}"
+
+    return render_template("login.html")
 
 
 def shutdown(signal_number, stack_frame):
