@@ -1,5 +1,6 @@
 import datetime
-import uuid
+
+from . import utils
 
 mongo = None
 
@@ -25,20 +26,30 @@ class User(Document):
         self.document = {k: kwargs.get(k) for k in self.keys}
 
     def login(self):
+        # lookup user document matching username and hashed password
         user_obj = mongo.db.users.find_one(
             {
-                "username": self.document["username"],
-                "password": self.document["password"],
+                "username": self["username"],
+                "password": utils.generate_hash(self["password"]),
             }
         )
+
+        # check if lookup was successful
         if not user_obj:
             raise ValueError("login failed")
-        # TODO: salt and md5 this session_key
-        session_key = str(uuid.uuid4())
+
+        # save a session cookie to user document
         mongo.db.users.find_one_and_update(
-            {"_id": user_obj["_id"]}, {"$set": {"session": session_key}}
+            {"_id": user_obj["_id"]},
+            {"$set": {"session": utils.generate_session_cookie()}},
         )
+
+        # update our document
         self.document.update(user_obj)
+
+    @staticmethod
+    def get_by_session(session):
+        return mongo.db.users.find_one({"session": session})
 
 
 class Post:

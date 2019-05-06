@@ -8,17 +8,21 @@ build:
 	@ # build docker container
 	docker-compose build
 
-shell:
-	@ # start an interactive shell
-	docker-compose run --rm --service-ports plog sh
+clean:
+	@ # clean up extra python files
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
 
 debug:
 	@ # start debug server
-	docker-compose run --rm --service-ports plog sh start_gunicorn.sh
+	docker-compose run --rm --service-ports -e IS_DEBUG=true plog
 
 serve:
 	@ # serve flask app with gunicorn
 	docker-compose up -d
+
+shell:
+	@ # start an interactive shell
+	docker-compose run --rm --service-ports plog sh
 
 stop:
 	@ # stop plog container

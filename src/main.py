@@ -1,13 +1,12 @@
-import datetime
 import logging
 import os
 import signal
 import sys
-from flask import Flask, request, render_template
+
+from flask import Flask, request, render_template, make_response
 from flask_pymongo import PyMongo
 
-import data
-
+from . import data
 
 # environment variables
 LISTEN_HOST = os.getenv("LISTEN_HOST", "0.0.0.0")
@@ -28,10 +27,9 @@ logging.getLogger("werkzeug").setLevel(log_level)
 
 # initialize database
 app.config["MONGO_URI"] = DB_CONNECTION_STRING
-mongo = PyMongo(app)
 
-# pass mongo instance to data module
-data.mongo = mongo
+# setup db
+data.mongo = PyMongo(app)
 
 
 @app.route("/")
@@ -42,20 +40,30 @@ def index():
 
 @app.route("/admin/login/", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        try:
-            user = data.User(**request.form)
-        except KeyError:
-            return "invalid post data", 400
+    # check for session cookie
+    session = request.cookies.get("session")
+    existing = data.User.get_by_session(session)
+    if existing:
+        return "u already logged in"
 
-        try:
-            user.login()
-        except ValueError:
-            return "login failed", 401
+    # handle GET request
+    if request.method == "GET":
+        return render_template("login.html")
 
-        return f"wow nice job, {user['username']}"
+    # attempt to login user
+    try:
+        user = data.User(**request.form)
+        user.login()
+    except KeyError:
+        return "invalid post data", 400
+    except ValueError:
+        return "login failed", 401
 
-    return render_template("login.html")
+    # return response with session cookie
+    ret = f"wow nice job, {user['username']}"
+    response = make_response(ret, 200)
+    response.set_cookie("session", user["session"])
+    return response
 
 
 def shutdown(signal_number, stack_frame):
