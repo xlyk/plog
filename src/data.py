@@ -38,14 +38,19 @@ class User(Document):
         if not user_obj:
             raise ValueError("login failed")
 
+        # create session_key
+        session_key = utils.generate_session_cookie()
+
         # save a session cookie to user document
         mongo.db.users.find_one_and_update(
-            {"_id": user_obj["_id"]},
-            {"$set": {"session": utils.generate_session_cookie()}},
+            {"_id": user_obj["_id"]}, {"$set": {"session": session_key}}
         )
 
         # update our document
+        user_obj["session"] = session_key
         self.document.update(user_obj)
+
+        return self
 
     @staticmethod
     def get_by_session(session):
@@ -54,10 +59,12 @@ class User(Document):
 
 class Post:
     @staticmethod
+    def get_all():
+        return [x for x in mongo.db.posts.find()]
+
+    @staticmethod
     def get_recent(limit):
-        cursor = mongo.db.posts.find().limit(limit)
-        posts = [x for x in cursor]
-        return posts
+        return [x for x in mongo.db.posts.find().limit(limit)]
 
     def create(self, title=None, content=None, image=None, slug=None, tags=[]):
         post = {

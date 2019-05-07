@@ -3,10 +3,11 @@ import os
 import signal
 import sys
 
-from flask import Flask, request, render_template, make_response
+from flask import Flask, request, render_template, make_response, redirect
 from flask_pymongo import PyMongo
 
 from . import data
+from .data import User, Post
 
 # environment variables
 LISTEN_HOST = os.getenv("LISTEN_HOST", "0.0.0.0")
@@ -34,17 +35,19 @@ data.mongo = PyMongo(app)
 
 @app.route("/")
 def index():
-    posts = data.Post.get_recent(limit=5)
+    """main page"""
+
+    posts = Post.get_recent(limit=5)
     return render_template("index.html", posts=posts)
 
 
 @app.route("/admin/login/", methods=["GET", "POST"])
 def login():
-    # check for session cookie
-    session = request.cookies.get("session")
-    existing = data.User.get_by_session(session)
-    if existing:
-        return "u already logged in"
+    """admin login"""
+
+    # redirect existing sessions to dashboard
+    if User.get_by_session(session=request.cookies.get("session")):
+        return redirect("/admin/dashboard/", code=302)
 
     # handle GET request
     if request.method == "GET":
@@ -52,18 +55,42 @@ def login():
 
     # attempt to login user
     try:
-        user = data.User(**request.form)
-        user.login()
+        user = User(**request.form).login()
     except KeyError:
         return "invalid post data", 400
     except ValueError:
         return "login failed", 401
 
     # return response with session cookie
-    ret = f"wow nice job, {user['username']}"
-    response = make_response(ret, 200)
+    response = make_response("", 200)
     response.set_cookie("session", user["session"])
-    return response
+    response.headers["location"] = "/admin/dashboard/"
+    return response, 302
+
+
+@app.route("/admin/dashboard/", methods=["GET"])
+def dashboard():
+    """admin dashboard"""
+
+    # check for session cookie
+    session = request.cookies.get("session")
+    user_obj = User.get_by_session(session)
+    if not user_obj:
+        # delete session cookie
+        response = make_response("")
+        response.set_cookie("session", "", expires=0)
+        response.headers["location"] = "/admin/login/"
+        return response, 302
+
+    return render_template("dashboard.html", posts=Post.get_all())
+
+
+def new_post():
+    """create post"""
+
+
+def edit_post():
+    """edit post"""
 
 
 def shutdown(signal_number, stack_frame):
