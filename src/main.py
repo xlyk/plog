@@ -36,7 +36,6 @@ data.mongo = PyMongo(app)
 @app.route("/")
 def index():
     """main page"""
-
     posts = Post.get_recent(limit=5)
     return render_template("index.html", posts=posts)
 
@@ -44,7 +43,6 @@ def index():
 @app.route("/admin/login/", methods=["GET", "POST"])
 def login():
     """admin login"""
-
     # redirect existing sessions to dashboard
     if User.get_by_session(session=request.cookies.get("session")):
         return redirect("/admin/dashboard/", code=302)
@@ -71,11 +69,7 @@ def login():
 @app.route("/admin/dashboard/", methods=["GET"])
 def dashboard():
     """admin dashboard"""
-
-    # check for session cookie
-    session = request.cookies.get("session")
-    user_obj = User.get_by_session(session)
-    if not user_obj:
+    if not check_session():
         return logout_response()
 
     return render_template("dashboard.html", posts=Post.get_all())
@@ -123,12 +117,14 @@ def logout():
 
 
 def check_session():
+    """returns true if session cookie is valid"""
     session = request.cookies.get("session")
     user_obj = User.get_by_session(session)
     return bool(user_obj)
 
 
 def logout_response():
+    """returns response that unsets cookie"""
     response = make_response("")
     response.set_cookie("session", "", expires=0)
     response.headers["location"] = "/admin/login/"
