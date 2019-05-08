@@ -76,21 +76,63 @@ def dashboard():
     session = request.cookies.get("session")
     user_obj = User.get_by_session(session)
     if not user_obj:
-        # delete session cookie
-        response = make_response("")
-        response.set_cookie("session", "", expires=0)
-        response.headers["location"] = "/admin/login/"
-        return response, 302
+        return logout_response()
 
     return render_template("dashboard.html", posts=Post.get_all())
 
 
-def new_post():
+@app.route("/admin/create/", methods=["GET", "POST"])
+def create_post():
     """create post"""
+    if not check_session():
+        return logout_response()
+
+    if request.method == "POST":
+        Post.create(
+            title=request.form.get("title"), content=request.form.get("content")
+        )
+        response = make_response("")
+        response.headers["location"] = "/admin/dashboard/"
+        return response, 302
+
+    return render_template("create.html")
 
 
-def edit_post():
+@app.route("/admin/edit/<post_id>/", methods=["GET", "POST"])
+def edit_post(post_id):
     """edit post"""
+    if not check_session():
+        return logout_response()
+
+    if request.method == "POST":
+        # update post
+        Post.update(
+            post_id=post_id,
+            title=request.form.get("title"),
+            content=request.form.get("content"),
+        )
+
+    post = Post.get_by_id(post_id)
+    return render_template("edit.html", post=post)
+
+
+@app.route("/admin/logout/", methods=["GET"])
+def logout():
+    """logout admin user"""
+    return logout_response()
+
+
+def check_session():
+    session = request.cookies.get("session")
+    user_obj = User.get_by_session(session)
+    return bool(user_obj)
+
+
+def logout_response():
+    response = make_response("")
+    response.set_cookie("session", "", expires=0)
+    response.headers["location"] = "/admin/login/"
+    return response, 302
 
 
 def shutdown(signal_number, stack_frame):

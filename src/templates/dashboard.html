@@ -1,18 +1,16 @@
 <html>
     <body>
         <h2>plog admin panel</h2>
-
         <!-- navigation -->
         <h3>Links:</h3>
         <ul>
             <li>
-                <a href="#">Create new post</a>
+                <a href="/admin/create/">Create new post</a>
             </li>
             <li>
-                <a href="#">Log out</a>
+                <a href="/admin/logout/">Log out</a>
             </li>
         </ul>
-
         <!-- posts -->
         {% if posts %}
         <h3>Posts:</h3>
@@ -20,7 +18,7 @@
             {% for post in posts %}
             <li>
                 {{ post.created.strftime('%Y-%m-%d') }} -
-                <a href="#">{{ post.title }}</a>
+                <a href="/admin/edit/{{ post._id }}">{{ post.title }}</a>
             </li>
             {% endfor %}
         </ul>

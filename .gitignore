@@ -12,3 +12,4 @@ src/__pycache__/
 \.env
 
 src/Pipfile
+tags

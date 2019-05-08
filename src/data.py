@@ -1,4 +1,5 @@
 import datetime
+from bson.objectid import ObjectId
 
 from . import utils
 
@@ -26,6 +27,8 @@ class User(Document):
         self.document = {k: kwargs.get(k) for k in self.keys}
 
     def login(self):
+        """authenticate user to admin dashboard"""
+
         # lookup user document matching username and hashed password
         user_obj = mongo.db.users.find_one(
             {
@@ -54,25 +57,46 @@ class User(Document):
 
     @staticmethod
     def get_by_session(session):
+        """lookup user by session"""
+
         return mongo.db.users.find_one({"session": session})
 
 
-class Post:
+class Post(Document):
+    def __init__(self, **kwargs):
+        self.keys = ["title", "content", "image"]
+        self.document = {k: kwargs.get(k) for k in self.keys}
+
+    @staticmethod
+    def get_by_id(post_id):
+        """get post by id"""
+        return mongo.db.posts.find_one({"_id": ObjectId(post_id)})
+
     @staticmethod
     def get_all():
-        return [x for x in mongo.db.posts.find()]
+        """get all posts"""
+        return [x for x in mongo.db.posts.find().sort("created", -1)]
 
     @staticmethod
     def get_recent(limit):
-        return [x for x in mongo.db.posts.find().limit(limit)]
+        """get recent posts with limit"""
+        return [x for x in mongo.db.posts.find().sort("created", -1).limit(limit)]
 
-    def create(self, title=None, content=None, image=None, slug=None, tags=[]):
+    @staticmethod
+    def update(post_id, title, content, image=""):
+        """update an existing post document"""
+        mongo.db.posts.find_one_and_update(
+            {"_id": ObjectId(post_id)},
+            {"$set": {"title": title, "content": content, "image": image}},
+        )
+
+    @staticmethod
+    def create(title, content, image=""):
+        """create a new post document"""
         post = {
             "title": title,
             "content": content,
             "image": image,
-            "slug": slug,
-            "tags": tags,
             "created": datetime.datetime.utcnow(),
         }
         mongo.db.posts.insert_one(post)

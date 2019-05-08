@@ -1,0 +1,22 @@
+<html>
+    <body>
+        <h2>edit post</h2>
+        <!-- form -->
+        <form action="/admin/edit/{{ post._id }}/" method="POST" autocomplete="off">
+            <!-- title -->
+            <div class="form-group">
+                <label for="title">Title:</label><br>
+                <input type="text" name="title" size="70" value="{{ post.title }}">
+            </div>
+            <br>
+            <!-- content -->
+            <div class="form-group">
+                <label for="content">Content:</label><br>
+                <textarea name="content" rows="20" cols="75">{{ post.content }}</textarea>
+            </div>
+            <br>
+            <!-- submit button -->
+            <input type="submit" value="Save Post">
+        </form>
+    </body>
+</html>
