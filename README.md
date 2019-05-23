@@ -2,16 +2,14 @@
 Plog: the simple Python blog 
 
 ## Features
+- Docker
 - Python 3.7
-- Dockerized containers
 - Flask
+- Gunicorn for HTTP WSGI
 - Mongo DB
-- Environment variables
-- Gunicorn for WSGI HTTP
-
 
 ## Required
-Get the right flavor of Docker for your OS...
+Get the right version of Docker for your OS
 - [Docker for Mac](https://docs.docker.com/docker-for-mac/install/)
 - [Docker for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 - [Docker for Windows](https://docs.docker.com/docker-for-windows/install/)
@@ -20,7 +18,6 @@ Get the right flavor of Docker for your OS...
 For Docker for Mac, this can be set by following these steps:
 
 Open Docker > Preferences > Advanced tab, then set memory to 4.0 GiB
-
 
 ## Project Commands
 - Build docker containers
