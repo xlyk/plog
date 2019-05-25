@@ -19,6 +19,13 @@ For Docker for Mac, this can be set by following these steps:
 
 Open Docker > Preferences > Advanced tab, then set memory to 4.0 GiB
 
+## Local setup
+- In your root directory, copy your environment variable file
+  - `cp env.dist .env`
+  - **note:** set DEBUG=False if in production
+- run `make build`
+- run `make debug`
+
 ## Project Commands
 - Build docker containers
   - `make build`
